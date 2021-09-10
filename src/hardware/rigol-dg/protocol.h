@@ -103,6 +103,10 @@ struct channel_status {
 	double phase;
 };
 
+enum device_options {
+	DO_COUNTER = 1,
+};
+
 struct device_spec {
 	const char *vendor;
 	const char *model;
@@ -113,6 +117,7 @@ struct device_spec {
 	const struct channel_spec *channels;
 	const uint32_t num_channels;
 	const struct scpi_command *cmdset;
+	const uint32_t opts;
 };
 
 struct dev_context {

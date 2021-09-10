@@ -199,6 +199,21 @@ static const struct channel_spec dg1062z_channels[] = {
 	{ "CH2",  ARRAY_AND_SIZE(dg1062z_waveforms) },
 };
 
+static const struct waveform_spec mso7k_waveforms[] = {
+	{ "SIN",   WF_SINE,     1.0E-1,  25.0E+6, 1.0E-1, WAVEFORM_DEFAULT },
+	{ "SQU",   WF_SQUARE,   1.0E-1,  15.0E+6, 1.0E-1, WAVEFORM_DEFAULT },
+	{ "RAMP",  WF_RAMP,     1.0E-1,   1.0E+5, 1.0E-1, WAVEFORM_DEFAULT },
+	{ "PULSE", WF_PULSE,    1.0E-1,   1.0E+6, 1.0E-1, WAVEFORM_DEFAULT | WFO_DUTY_CYCLE },
+	{ "USER",  WF_ARB,      1.0E-1,  10.0E+6, 1.0E-1, WAVEFORM_DEFAULT },
+	{ "NOISE", WF_NOISE,  100.0E+6, 100.0E+6, 0.0E-0, WFO_AMPLITUDE | WFO_OFFSET },
+	{ "DC",    WF_DC,       0.0E-0,   0.0E+0, 0.0E-0, WFO_OFFSET },
+};
+
+static const struct channel_spec mso7k_channels[] = {
+	{ "GI",  ARRAY_AND_SIZE(mso7k_waveforms) },
+	{ "GII",  ARRAY_AND_SIZE(mso7k_waveforms) },
+};
+
 static const struct scpi_command cmdset_dg1000z[] = {
 	{ PSG_CMD_SETUP_LOCAL, "SYST:KLOC:STATE OFF", },
 /*	{ PSG_CMD_SELECT_CHANNEL, "SYST:CHAN:CUR CH%s", }, */
@@ -227,78 +242,121 @@ static const struct scpi_command cmdset_dg1000z[] = {
 	ALL_ZERO
 };
 
+static const struct scpi_command cmdset_mso7k[] = {
+	{ PSG_CMD_GET_ENABLED, "SOUR%s:OUTP:STATE?", },
+	{ PSG_CMD_SET_ENABLE, "SOUR%s:OUTP:STATE ON", },
+	{ PSG_CMD_SET_DISABLE, "SOUR%s:OUTP:STATE OFF", },
+	{ PSG_CMD_GET_SOURCE, "SOUR%s:APPL?", },
+	{ PSG_CMD_SET_SOURCE, "SOUR%s:APPL:%s", },
+	{ PSG_CMD_GET_FREQUENCY, "SOUR%s:FREQ?", },
+	{ PSG_CMD_SET_FREQUENCY, "SOUR%s:FREQ %f", },
+	{ PSG_CMD_GET_AMPLITUDE, "SOUR%s:VOLT?", },
+	{ PSG_CMD_SET_AMPLITUDE, "SOUR%s:VOLT %f", },
+	{ PSG_CMD_GET_OFFSET, "SOUR%s:VOLT:OFFS?", },
+	{ PSG_CMD_SET_OFFSET, "SOUR%s:VOLT:OFFS %f", },
+	{ PSG_CMD_GET_PHASE, "SOUR%s:PHAS?", },
+	{ PSG_CMD_SET_PHASE, "SOUR%s:PHAS %f", },
+	{ PSG_CMD_GET_DCYCL_PULSE, "SOUR%s:PULS:DCYC?", },
+	{ PSG_CMD_SET_DCYCL_PULSE, "SOUR%s:PULS:DCYC %f", },
+	ALL_ZERO
+};
+
 static const struct device_spec device_models[] = {
 	{ "Rigol Technologies", "DG811",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg811_channels),
-		cmdset_dg1000z,
+		cmdset_dg1000z, DO_COUNTER,
 	},
 	{ "Rigol Technologies", "DG812",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg812_channels),
-		cmdset_dg1000z,
+		cmdset_dg1000z, DO_COUNTER,
 	},
 	{ "Rigol Technologies", "DG821",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg821_channels),
-		cmdset_dg1000z,
+		cmdset_dg1000z, DO_COUNTER,
 	},
 	{ "Rigol Technologies", "DG822",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg822_channels),
-		cmdset_dg1000z,
+		cmdset_dg1000z, DO_COUNTER,
 	},
 	{ "Rigol Technologies", "DG831",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg831_channels),
-		cmdset_dg1000z,
+		cmdset_dg1000z, DO_COUNTER,
 	},
 	{ "Rigol Technologies", "DG832",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg832_channels),
-		cmdset_dg1000z,
+		cmdset_dg1000z, DO_COUNTER,
 	},
 	{ "Rigol Technologies", "DG952",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg952_channels),
-		cmdset_dg1000z,
+		cmdset_dg1000z, DO_COUNTER,
 	},
 	{ "Rigol Technologies", "DG972",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg972_channels),
-		cmdset_dg1000z,
+		cmdset_dg1000z, DO_COUNTER,
 	},
 	{ "Rigol Technologies", "DG992",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg992_channels),
-		cmdset_dg1000z,
+		cmdset_dg1000z, DO_COUNTER,
 	},
 	{ "Rigol Technologies", "DG1022Z",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg1022z_channels),
-		cmdset_dg1000z,
+		cmdset_dg1000z, DO_COUNTER,
 	},
 	{ "Rigol Technologies", "DG1032Z",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg1032z_channels),
-		cmdset_dg1000z,
+		cmdset_dg1000z, DO_COUNTER,
 	},
 	{ "Rigol Technologies", "DG1062Z",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg1062z_channels),
-		cmdset_dg1000z,
+		cmdset_dg1000z, DO_COUNTER,
+	},
+	{ "Rigol Technologies", "MSO7014",
+		ARRAY_AND_SIZE(dg1000z_devopts),
+		ARRAY_AND_SIZE(mso7k_cg),
+		ARRAY_AND_SIZE(mso7k_channels),
+		cmdset_mso7k, 0,
+	},
+	{ "Rigol Technologies", "MSO7024",
+		ARRAY_AND_SIZE(dg1000z_devopts),
+		ARRAY_AND_SIZE(mso7k_cg),
+		ARRAY_AND_SIZE(mso7k_channels),
+		cmdset_mso7k, 0,
+	},
+	{ "Rigol Technologies", "MSO7034",
+		ARRAY_AND_SIZE(dg1000z_devopts),
+		ARRAY_AND_SIZE(mso7k_cg),
+		ARRAY_AND_SIZE(mso7k_channels),
+		cmdset_mso7k, 0,
+	},
+	{ "Rigol Technologies", "MSO7054",
+		ARRAY_AND_SIZE(dg1000z_devopts),
+		ARRAY_AND_SIZE(mso7k_cg),
+		ARRAY_AND_SIZE(mso7k_channels),
+		cmdset_mso7k, 0,
 	},
 };
 
@@ -389,10 +447,12 @@ static struct sr_dev_inst *probe_device(struct sr_scpi_dev_inst *scpi)
 	}
 
 	/* Create channels for the frequency counter output. */
-	ch = sr_channel_new(sdi, ch_idx++, SR_CHANNEL_ANALOG, TRUE, "FREQ1");
-	ch = sr_channel_new(sdi, ch_idx++, SR_CHANNEL_ANALOG, TRUE, "PERIOD1");
-	ch = sr_channel_new(sdi, ch_idx++, SR_CHANNEL_ANALOG, TRUE, "DUTY1");
-	ch = sr_channel_new(sdi, ch_idx++, SR_CHANNEL_ANALOG, TRUE, "WIDTH1");
+	if (device->opts & DO_COUNTER) {
+		ch = sr_channel_new(sdi, ch_idx++, SR_CHANNEL_ANALOG, TRUE, "FREQ1");
+		ch = sr_channel_new(sdi, ch_idx++, SR_CHANNEL_ANALOG, TRUE, "PERIOD1");
+		ch = sr_channel_new(sdi, ch_idx++, SR_CHANNEL_ANALOG, TRUE, "DUTY1");
+		ch = sr_channel_new(sdi, ch_idx++, SR_CHANNEL_ANALOG, TRUE, "WIDTH1");
+	}
 
 	/* Put device back to "local" mode, in case only a scan was done... */
 	command = sr_scpi_cmd_get(devc->cmdset, PSG_CMD_SETUP_LOCAL);
