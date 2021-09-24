@@ -760,7 +760,13 @@ static int config_set(uint32_t key, GVariant *data,
 			return SR_ERR_ARG;
 		devc->vdiv[i] = (float)vdivs[idx][0] / vdivs[idx][1];
 		g_ascii_formatd(buffer, sizeof(buffer), "%.3f", devc->vdiv[i]);
-		return rigol_ds_config_set(sdi, ":CHAN%d:SCAL %s", i + 1, buffer);
+		ret = rigol_ds_config_set(sdi, ":CHAN%d:SCAL %s", i + 1, buffer);
+		if (ret != SR_OK)
+			return ret;
+		ret = rigol_ds_get_dev_cfg_vertical(sdi);
+		if (fabs(devc->vdiv[i] - (float)vdivs[idx][0] / vdivs[idx][1]) > 0.1)
+			return SR_ERR;
+		return ret;
 	case SR_CONF_COUPLING:
 		if (!cg)
 			return SR_ERR_CHANNEL_GROUP;
