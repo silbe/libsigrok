@@ -58,6 +58,7 @@ static const uint32_t devopts_cg_analog[] = {
 	SR_CONF_VDIV | SR_CONF_GET | SR_CONF_SET | SR_CONF_LIST,
 	SR_CONF_COUPLING | SR_CONF_GET | SR_CONF_SET | SR_CONF_LIST,
 	SR_CONF_PROBE_FACTOR | SR_CONF_GET | SR_CONF_SET | SR_CONF_LIST,
+	SR_CONF_IMPEDANCE | SR_CONF_GET | SR_CONF_SET | SR_CONF_LIST,
 };
 
 static const uint64_t timebases[][2] = {
@@ -155,6 +156,10 @@ static const uint64_t probe_factor[] = {
 	1, 2, 5, 10, 20, 50, 100, 200, 500, 1000,
 };
 
+static const uint64_t impedance[] = {
+	50, 1000000UL,
+};
+
 /* Do not change the order of entries */
 static const char *data_sources[] = {
 	"Live",
@@ -202,27 +207,27 @@ static const struct rigol_ds_vendor supported_vendors[] = {
  * number of horizontal divs, live waveform samples, memory buffer samples */
 static const struct rigol_ds_series supported_series[] = {
 	[VS5000] = {VENDOR(RIGOL), "VS5000", PROTOCOL_V1, FORMAT_RAW,
-		{50, 1}, {2, 1000}, 14, 2048, 0},
+		{50, 1}, {2, 1000}, 14, 2048, 0, FALSE},
 	[DS1000] = {VENDOR(RIGOL), "DS1000", PROTOCOL_V2, FORMAT_IEEE488_2,
-		{50, 1}, {2, 1000}, 12, 600, 1048576},
+		{50, 1}, {2, 1000}, 12, 600, 1048576, FALSE},
 	[DS2000] = {VENDOR(RIGOL), "DS2000", PROTOCOL_V3, FORMAT_IEEE488_2,
-		{500, 1}, {500, 1000000}, 14, 1400, 14000},
+		{500, 1}, {500, 1000000}, 14, 1400, 14000, FALSE},
 	[DS2000A] = {VENDOR(RIGOL), "DS2000A", PROTOCOL_V3, FORMAT_IEEE488_2,
-		{1000, 1}, {500, 1000000}, 14, 1400, 14000},
+		{1000, 1}, {500, 1000000}, 14, 1400, 14000, TRUE},
 	[DSO1000] = {VENDOR(AGILENT), "DSO1000", PROTOCOL_V3, FORMAT_IEEE488_2,
-		{50, 1}, {2, 1000}, 12, 600, 20480},
+		{50, 1}, {2, 1000}, 12, 600, 20480, FALSE},
 	[DSO1000B] = {VENDOR(AGILENT), "DSO1000", PROTOCOL_V3, FORMAT_IEEE488_2,
-		{50, 1}, {2, 1000}, 12, 600, 20480},
+		{50, 1}, {2, 1000}, 12, 600, 20480, FALSE},
 	[DS1000Z] = {VENDOR(RIGOL), "DS1000Z", PROTOCOL_V4, FORMAT_IEEE488_2,
-		{50, 1}, {1, 1000}, 12, 1200, 12000000},
+		{50, 1}, {1, 1000}, 12, 1200, 12000000, FALSE},
 	[DS4000] = {VENDOR(RIGOL), "DS4000", PROTOCOL_V4, FORMAT_IEEE488_2,
-		{1000, 1}, {1, 1000}, 14, 1400, 0},
+		{1000, 1}, {1, 1000}, 14, 1400, 0, TRUE},
 	[MSO5000] = {VENDOR(RIGOL), "MSO5000", PROTOCOL_V5, FORMAT_IEEE488_2,
-		{1000, 1}, {500, 1000000}, 10, 1000, 0},
+		{1000, 1}, {500, 1000000}, 10, 1000, 0, FALSE},
 	[MSO7000] = {VENDOR(RIGOL), "MSO7000", PROTOCOL_V5, FORMAT_IEEE488_2,
-		{1000, 1}, {1, 1000}, 10, 1000, 500000000},
+		{1000, 1}, {1, 1000}, 10, 1000, 500000000, TRUE},
 	[MSO7000A] = {VENDOR(AGILENT), "MSO7000A", PROTOCOL_V4, FORMAT_IEEE488_2,
-		{50, 1}, {2, 1000}, 10, 1000, 8000000},
+		{50, 1}, {2, 1000}, 10, 1000, 8000000, TRUE},
 };
 
 #define SERIES(x) &supported_series[x]
@@ -671,6 +676,15 @@ static int config_get(uint32_t key, GVariant **data,
 		}
 		*data = g_variant_new_uint64(devc->attenuation[analog_channel]);
 		break;
+	case SR_CONF_IMPEDANCE:
+		if (!(devc->model->series->opts & SERIES_OPT_IMPEDANCE_50OHMS))
+			return SR_ERR_NA;
+		if (analog_channel < 0) {
+			sr_dbg("Negative analog channel: %d.", analog_channel);
+			return SR_ERR_NA;
+		}
+		*data = g_variant_new_uint64(devc->impedance[analog_channel]);
+		break;
 	default:
 		return SR_ERR_NA;
 	}
@@ -790,6 +804,19 @@ static int config_set(uint32_t key, GVariant *data,
 		if (ret == SR_OK)
 			rigol_ds_get_dev_cfg_vertical(sdi);
 		return ret;
+	case SR_CONF_IMPEDANCE:
+		if (!(devc->model->series->opts & SERIES_OPT_IMPEDANCE_50OHMS))
+			return SR_ERR_NA;
+		if (!cg)
+			return SR_ERR_CHANNEL_GROUP;
+		if ((i = std_cg_idx(cg, devc->analog_groups, devc->model->analog_channels)) < 0)
+			return SR_ERR_ARG;
+		if ((idx = std_u64_idx(data, ARRAY_AND_SIZE(impedance))) < 0)
+			return SR_ERR_ARG;
+		p = g_variant_get_uint64(data);
+		devc->impedance[i] = impedance[idx];
+		return rigol_ds_config_set(sdi, ":CHAN%d:IMP %s", i + 1,
+					   devc->impedance[i] == 50 ? "FIFT" : "OMEG");
 	case SR_CONF_DATA_SOURCE:
 		tmp_str = g_variant_get_string(data, NULL);
 		if (!strcmp(tmp_str, "Live"))
@@ -845,6 +872,13 @@ static int config_list(uint32_t key, GVariant **data,
 		if (!cg)
 			return SR_ERR_CHANNEL_GROUP;
 		*data = std_gvar_array_u64(ARRAY_AND_SIZE(probe_factor));
+		break;
+	case SR_CONF_IMPEDANCE:
+		if (!(devc->model->series->opts & SERIES_OPT_IMPEDANCE_50OHMS))
+			return SR_ERR_NA;
+		if (!cg)
+			return SR_ERR_CHANNEL_GROUP;
+		*data = std_gvar_array_u64(ARRAY_AND_SIZE(impedance));
 		break;
 	case SR_CONF_VDIV:
 		if (!devc)

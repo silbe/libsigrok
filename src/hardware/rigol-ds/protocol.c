@@ -955,6 +955,33 @@ SR_PRIV int rigol_ds_get_dev_cfg(const struct sr_dev_inst *sdi)
 	for (i = 0; i < devc->model->analog_channels; i++)
 		sr_dbg("CH%d %s", i + 1, devc->coupling[i]);
 
+	for (i = 0; i < devc->model->analog_channels; i++) {
+		char *response;
+
+		if (!(devc->model->series->opts & SERIES_OPT_IMPEDANCE_50OHMS))
+			continue;
+		cmd = g_strdup_printf(":CHAN%d:IMP?", i + 1);
+		res = sr_scpi_get_string(sdi->conn, cmd, &response);
+		g_free(cmd);
+		if (res != SR_OK)
+			return SR_ERR;
+		if (g_ascii_strcasecmp(response, "OMEG") == 0)
+			devc->impedance[i] = 1000000UL;
+		else if (g_ascii_strcasecmp(response, "FIFT") == 0)
+			devc->impedance[i] = 50;
+		else {
+			sr_err("Invalid impedance value '%s'", response);
+			g_free(response);
+			return SR_ERR;
+		}
+		g_free(response);
+	}
+	if (devc->model->series->opts & SERIES_OPT_IMPEDANCE_50OHMS) {
+		sr_dbg("Current impedance:");
+		for (i = 0; i < devc->model->analog_channels; i++)
+			sr_dbg("CH%d %" PRIu64, i + 1, devc->impedance[i]);
+	}
+
 	/* Trigger source. */
 	g_free(devc->trigger_source);
 	devc->trigger_source = NULL;

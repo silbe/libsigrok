@@ -63,6 +63,10 @@ struct rigol_ds_vendor {
 	const char *full_name;
 };
 
+enum series_opt {
+	SERIES_OPT_IMPEDANCE_50OHMS = 1,
+};
+
 struct rigol_ds_series {
 	const struct rigol_ds_vendor *vendor;
 	const char *name;
@@ -73,6 +77,7 @@ struct rigol_ds_series {
 	int num_horizontal_divs;
 	int live_samples;
 	int buffer_samples;
+	uint32_t opts;
 };
 
 enum cmds {
@@ -141,6 +146,7 @@ struct dev_context {
 	char *trigger_slope;
 	float trigger_level;
 	char *coupling[MAX_ANALOG_CHANNELS];
+	uint64_t impedance[MAX_ANALOG_CHANNELS];
 
 	/* Number of frames received in total. */
 	uint64_t num_frames;
