@@ -228,6 +228,8 @@ static struct sr_key_info sr_key_info_config[] = {
 		"Probe factor", NULL},
 	{SR_CONF_ADC_POWERLINE_CYCLES, SR_T_FLOAT, "nplc",
 		"Number of ADC powerline cycles", NULL},
+	{SR_CONF_IMPEDANCE, SR_T_UINT64, "impedance",
+		"Impedance", NULL},
 
 	/* Acquisition modes, sample limiting */
 	{SR_CONF_LIMIT_MSEC, SR_T_UINT64, "limit_time",

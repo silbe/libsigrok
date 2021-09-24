@@ -1119,6 +1119,14 @@ enum sr_configkey {
 	/** Number of powerline cycles for ADC integration time. */
 	SR_CONF_ADC_POWERLINE_CYCLES,
 
+	/**
+	 * Input resp. output impedance in ohms.
+	 * @arg type: uint64
+	 * @arg get: get impedance setting
+	 * @arg set: change impedance setting
+	 */
+	SR_CONF_IMPEDANCE,
+
 	/* Update sr_key_info_config[] (hwdriver.c) upon changes! */
 
 	/*--- Acquisition modes, sample limiting ----------------------------*/
