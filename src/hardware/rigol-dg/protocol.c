@@ -72,8 +72,9 @@ SR_PRIV int rigol_dg_get_channel_state(const struct sr_dev_inst *sdi,
 	GVariant *data;
 	gchar *response, **params;
 	const gchar *s;
+	gchar *endptr;
 	enum waveform_type wf;
-	double freq, ampl, offset, phase;
+	double freq, ampl, offset, phase, impedance;
 	int ret;
 
 	devc = sdi->priv;
@@ -152,6 +153,36 @@ SR_PRIV int rigol_dg_get_channel_state(const struct sr_dev_inst *sdi,
 		phase = g_ascii_strtod(s, NULL);
 		ch_status->phase = phase;
 
+		ret = SR_OK;
+	}
+
+	command = sr_scpi_cmd_get(devc->cmdset, PSG_CMD_GET_IMPEDANCE);
+	if (command && *command) {
+		sr_scpi_get_opc(scpi);
+		ret = sr_scpi_cmd_resp(sdi, devc->cmdset,
+			PSG_CMD_SELECT_CHANNEL, cg->name, &data,
+			G_VARIANT_TYPE_STRING, PSG_CMD_GET_IMPEDANCE, cg->name);
+		if (ret != SR_OK)
+			goto done;
+		response = g_variant_dup_string(data, NULL);
+		g_strstrip(response);
+		sr_spew("Impedance: '%s'", response);
+
+		if (g_ascii_strcasecmp(response, "INF") == 0)
+			impedance = 1000000UL;
+		else if (g_ascii_strcasecmp(response, "FIFT") == 0)
+			impedance = 50;
+		else if (g_ascii_strcasecmp(response, "OMEG") == 0)
+			impedance = 1000000UL;
+		else {
+			impedance = g_ascii_strtod(response, &endptr);
+			if (*endptr) {
+				ret = SR_ERR_IO;
+				goto done;
+			}
+		}
+
+		ch_status->impedance = MIN((uint64_t)impedance, 1000000UL);
 		ret = SR_OK;
 	}
 

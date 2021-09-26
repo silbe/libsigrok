@@ -41,6 +41,10 @@ enum psg_commands {
 	PSG_CMD_GET_ENABLED,
 	PSG_CMD_SET_ENABLE,
 	PSG_CMD_SET_DISABLE,
+	PSG_CMD_GET_IMPEDANCE,
+	PSG_CMD_SET_IMPEDANCE_NUM,
+	PSG_CMD_SET_IMPEDANCE_50OHMS,
+	PSG_CMD_SET_IMPEDANCE_HIGHZ,
 	PSG_CMD_GET_SOURCE,
 	PSG_CMD_SET_SOURCE,
 	PSG_CMD_SET_FREQUENCY,
@@ -101,10 +105,17 @@ struct channel_status {
 	double ampl;
 	double offset;
 	double phase;
+	uint64_t impedance;
 };
 
 enum device_options {
 	DO_COUNTER = 1,
+	/* HighZ is represented as "OMEG" */
+	DO_IMPEDANCE_OMEG = 2,
+	/* HighZ is represented as "INFinity" */
+	DO_IMPEDANCE_INF = 4,
+	/* Supports numeric impedance setting 1Ω…10kΩ */
+	DO_IMPEDANCE_NUM_1R_10K = 8,
 };
 
 struct device_spec {

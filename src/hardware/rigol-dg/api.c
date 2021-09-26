@@ -48,7 +48,20 @@ static const uint32_t dg1000z_devopts_cg[] = {
 	SR_CONF_DUTY_CYCLE | SR_CONF_GET | SR_CONF_SET,
 };
 
+static const uint32_t mso7k_devopts_cg[] = {
+	SR_CONF_ENABLED | SR_CONF_GET | SR_CONF_SET,
+	SR_CONF_PATTERN_MODE | SR_CONF_GET | SR_CONF_SET | SR_CONF_LIST,
+	SR_CONF_OUTPUT_FREQUENCY | SR_CONF_GET | SR_CONF_SET | SR_CONF_LIST,
+	SR_CONF_AMPLITUDE | SR_CONF_GET | SR_CONF_SET,
+	SR_CONF_OFFSET | SR_CONF_GET | SR_CONF_SET,
+	SR_CONF_PHASE | SR_CONF_GET | SR_CONF_SET | SR_CONF_LIST,
+	SR_CONF_DUTY_CYCLE | SR_CONF_GET | SR_CONF_SET,
+	SR_CONF_IMPEDANCE | SR_CONF_GET | SR_CONF_SET | SR_CONF_LIST,
+};
+
 static const double phase_min_max_step[] = { 0.0, 360.0, 0.001 };
+static const uint64_t impedances_50_highz[] = { 50, 1000000UL };
+static const double impedance_1r_10k[] = { 1.0, 10.0, 1.0 };
 
 #define WAVEFORM_DEFAULT WFO_FREQUENCY | WFO_AMPLITUDE | WFO_OFFSET | WFO_PHASE
 
@@ -221,6 +234,9 @@ static const struct scpi_command cmdset_dg1000z[] = {
 	{ PSG_CMD_GET_ENABLED, "OUTP%s:STATE?", },
 	{ PSG_CMD_SET_ENABLE, "OUTP%s:STATE ON", },
 	{ PSG_CMD_SET_DISABLE, "OUTP%s:STATE OFF", },
+	{ PSG_CMD_GET_IMPEDANCE, "OUTP%s:IMP?", },
+	{ PSG_CMD_SET_IMPEDANCE_NUM, "OUTP%s:IMP %f", },
+	{ PSG_CMD_SET_IMPEDANCE_HIGHZ, "OUTP%s:IMP INF", },
 	{ PSG_CMD_GET_SOURCE, "SOUR%s:APPL?", },
 	{ PSG_CMD_SET_SOURCE, "SOUR%s:APPL:%s", },
 	{ PSG_CMD_GET_FREQUENCY, "SOUR%s:FREQ?", },
@@ -246,6 +262,9 @@ static const struct scpi_command cmdset_mso7k[] = {
 	{ PSG_CMD_GET_ENABLED, "SOUR%s:OUTP:STATE?", },
 	{ PSG_CMD_SET_ENABLE, "SOUR%s:OUTP:STATE ON", },
 	{ PSG_CMD_SET_DISABLE, "SOUR%s:OUTP:STATE OFF", },
+	{ PSG_CMD_GET_IMPEDANCE, "SOUR%s:OUTP:IMP?", },
+	{ PSG_CMD_SET_IMPEDANCE_50OHMS, "SOUR%s:OUTP:IMP FIFT", },
+	{ PSG_CMD_SET_IMPEDANCE_HIGHZ, "SOUR%s:OUTP:IMP INF", },
 	{ PSG_CMD_GET_SOURCE, "SOUR%s:APPL?", },
 	{ PSG_CMD_SET_SOURCE, "SOUR%s:APPL:%s", },
 	{ PSG_CMD_GET_FREQUENCY, "SOUR%s:FREQ?", },
@@ -266,95 +285,95 @@ static const struct device_spec device_models[] = {
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg811_channels),
-		cmdset_dg1000z, DO_COUNTER,
+		cmdset_dg1000z, DO_COUNTER | DO_IMPEDANCE_NUM_1R_10K,
 	},
 	{ "Rigol Technologies", "DG812",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg812_channels),
-		cmdset_dg1000z, DO_COUNTER,
+		cmdset_dg1000z, DO_COUNTER | DO_IMPEDANCE_NUM_1R_10K,
 	},
 	{ "Rigol Technologies", "DG821",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg821_channels),
-		cmdset_dg1000z, DO_COUNTER,
+		cmdset_dg1000z, DO_COUNTER | DO_IMPEDANCE_NUM_1R_10K,
 	},
 	{ "Rigol Technologies", "DG822",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg822_channels),
-		cmdset_dg1000z, DO_COUNTER,
+		cmdset_dg1000z, DO_COUNTER | DO_IMPEDANCE_NUM_1R_10K,
 	},
 	{ "Rigol Technologies", "DG831",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg831_channels),
-		cmdset_dg1000z, DO_COUNTER,
+		cmdset_dg1000z, DO_COUNTER | DO_IMPEDANCE_NUM_1R_10K,
 	},
 	{ "Rigol Technologies", "DG832",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg832_channels),
-		cmdset_dg1000z, DO_COUNTER,
+		cmdset_dg1000z, DO_COUNTER | DO_IMPEDANCE_NUM_1R_10K,
 	},
 	{ "Rigol Technologies", "DG952",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg952_channels),
-		cmdset_dg1000z, DO_COUNTER,
+		cmdset_dg1000z, DO_COUNTER | DO_IMPEDANCE_NUM_1R_10K,
 	},
 	{ "Rigol Technologies", "DG972",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg972_channels),
-		cmdset_dg1000z, DO_COUNTER,
+		cmdset_dg1000z, DO_COUNTER | DO_IMPEDANCE_NUM_1R_10K,
 	},
 	{ "Rigol Technologies", "DG992",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg992_channels),
-		cmdset_dg1000z, DO_COUNTER,
+		cmdset_dg1000z, DO_COUNTER | DO_IMPEDANCE_NUM_1R_10K,
 	},
 	{ "Rigol Technologies", "DG1022Z",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg1022z_channels),
-		cmdset_dg1000z, DO_COUNTER,
+		cmdset_dg1000z, DO_COUNTER | DO_IMPEDANCE_NUM_1R_10K,
 	},
 	{ "Rigol Technologies", "DG1032Z",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg1032z_channels),
-		cmdset_dg1000z, DO_COUNTER,
+		cmdset_dg1000z, DO_COUNTER | DO_IMPEDANCE_NUM_1R_10K,
 	},
 	{ "Rigol Technologies", "DG1062Z",
 		ARRAY_AND_SIZE(dg1000z_devopts),
 		ARRAY_AND_SIZE(dg1000z_devopts_cg),
 		ARRAY_AND_SIZE(dg1062z_channels),
-		cmdset_dg1000z, DO_COUNTER,
+		cmdset_dg1000z, DO_COUNTER | DO_IMPEDANCE_NUM_1R_10K,
 	},
 	{ "Rigol Technologies", "MSO7014",
 		ARRAY_AND_SIZE(dg1000z_devopts),
-		ARRAY_AND_SIZE(mso7k_cg),
+		ARRAY_AND_SIZE(mso7k_devopts_cg),
 		ARRAY_AND_SIZE(mso7k_channels),
 		cmdset_mso7k, 0,
 	},
 	{ "Rigol Technologies", "MSO7024",
 		ARRAY_AND_SIZE(dg1000z_devopts),
-		ARRAY_AND_SIZE(mso7k_cg),
+		ARRAY_AND_SIZE(mso7k_devopts_cg),
 		ARRAY_AND_SIZE(mso7k_channels),
 		cmdset_mso7k, 0,
 	},
 	{ "Rigol Technologies", "MSO7034",
 		ARRAY_AND_SIZE(dg1000z_devopts),
-		ARRAY_AND_SIZE(mso7k_cg),
+		ARRAY_AND_SIZE(mso7k_devopts_cg),
 		ARRAY_AND_SIZE(mso7k_channels),
 		cmdset_mso7k, 0,
 	},
 	{ "Rigol Technologies", "MSO7054",
 		ARRAY_AND_SIZE(dg1000z_devopts),
-		ARRAY_AND_SIZE(mso7k_cg),
+		ARRAY_AND_SIZE(mso7k_devopts_cg),
 		ARRAY_AND_SIZE(mso7k_channels),
 		cmdset_mso7k, 0,
 	},
@@ -589,6 +608,10 @@ static int config_get(uint32_t key, GVariant **data,
 				PSG_CMD_SELECT_CHANNEL, cg->name, data,
 				G_VARIANT_TYPE_DOUBLE, cmd, cg->name);
 			break;
+		case SR_CONF_IMPEDANCE:
+			if ((ret = rigol_dg_get_channel_state(sdi, cg)) == SR_OK)
+				*data = g_variant_new_uint64(ch_status->impedance);
+			break;
 		default:
 			sr_dbg("%s: Unsupported (cg) key: %d (%s)", __func__,
 				(int)key, (kinfo ? kinfo->name : "unknown"));
@@ -613,6 +636,7 @@ static int config_set(uint32_t key, GVariant *data,
 	uint32_t cmd;
 	const char *mode, *mode_name, *new_mode;
 	unsigned int i;
+	uint64_t value_u64;
 
 	if (!data || !sdi)
 		return SR_ERR_ARG;
@@ -719,6 +743,29 @@ static int config_set(uint32_t key, GVariant *data,
 				PSG_CMD_SELECT_CHANNEL, cg->name,
 				cmd, cg->name, g_variant_get_double(data));
 			break;
+		case SR_CONF_IMPEDANCE:
+			ret = SR_ERR_ARG;
+			value_u64 = g_variant_get_uint64(data);
+			if ((value_u64 != 50) && (value_u64 != 1000000UL) && !(devc->device->opts & DO_IMPEDANCE_NUM_1R_10K))
+				break;
+			if (value_u64 == 1000000UL) {
+				ret = sr_scpi_cmd(sdi, devc->cmdset,
+						  PSG_CMD_SELECT_CHANNEL, cg->name,
+						  PSG_CMD_SET_IMPEDANCE_HIGHZ, cg->name);
+			}
+			else if (value_u64 == 50) {
+				/* Depending on the model 50Ω is encoded either as a number or as "FIFTy". */
+				ret = sr_scpi_cmd(sdi, devc->cmdset,
+						  PSG_CMD_SELECT_CHANNEL, cg->name,
+						  PSG_CMD_SET_IMPEDANCE_50OHMS, cg->name,
+						  PSG_CMD_SET_IMPEDANCE_NUM, cg->name, (float)value_u64);
+			}
+			else {
+				ret = sr_scpi_cmd(sdi, devc->cmdset,
+						  PSG_CMD_SELECT_CHANNEL, cg->name,
+						  PSG_CMD_SET_IMPEDANCE_NUM, cg->name, (float)value_u64);
+			}
+			break;
 		default:
 			sr_dbg("%s: Unsupported key: %d (%s)", __func__,
 				(int)key, (kinfo ? kinfo->name : "unknown"));
@@ -798,6 +845,12 @@ static int config_list(uint32_t key, GVariant **data,
 			break;
 		case SR_CONF_PHASE:
 			*data = std_gvar_min_max_step_array(phase_min_max_step);
+			break;
+		case SR_CONF_IMPEDANCE:
+			if (devc->device->opts & DO_IMPEDANCE_NUM_1R_10K)
+				*data = std_gvar_min_max_step_array(impedance_1r_10k);
+			else
+				*data = std_gvar_array_u64(ARRAY_AND_SIZE(impedances_50_highz));
 			break;
 		default:
 			return SR_ERR_NA;
